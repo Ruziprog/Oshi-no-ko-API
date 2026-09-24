@@ -78,6 +78,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "email": current_user.email
     }
 
+
 @app.get("/characters", response_model=list[CharacterResponse])
 async def get_characters():
     async with SessionLocal() as session:
@@ -85,3 +86,108 @@ async def get_characters():
         result = await session.execute(statement)
         characters = result.scalars().all()
         return characters
+    
+    
+@app.get(
+    "/characters/{character_name}",
+    response_model=CharacterResponse
+)
+async def get_character(character_name: str):
+    async with SessionLocal() as session:
+        statement = select(Character).where(
+            Character.name == character_name
+        )
+
+        result = await session.execute(statement)
+
+        character = result.scalar_one_or_none()
+
+        if character is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Character not found"
+            )
+
+        return character
+    
+    
+@app.post(
+    "/characters",
+    response_model=CharacterResponse,
+    status_code=201
+)
+async def create_character(character: CharacterCreate):
+    async with SessionLocal() as session:
+        new_character = Character(
+            name=character.name,
+            age=character.age,
+            description=character.description,
+            role=character.role,
+            type="character"
+        )
+
+        session.add(new_character)
+
+        await session.commit()
+        await session.refresh(new_character)
+
+        return new_character
+    
+    
+@app.put(
+    "/characters/{character_id}",
+    response_model=CharacterResponse
+)
+async def update_character(
+    character_id: int,
+    character_data: CharacterCreate
+):
+    async with SessionLocal() as session:
+        statement = select(Character).where(
+            Character.id == character_id
+        )
+
+        result = await session.execute(statement)
+
+        character = result.scalar_one_or_none()
+
+        if character is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Character not found"
+            )
+
+        character.name = character_data.name
+        character.age = character_data.age
+        character.description = character_data.description
+        character.role = character_data.role
+
+        await session.commit()
+        await session.refresh(character)
+
+        return character
+    
+    
+@app.delete("/characters/{character_id}")
+async def delete_character(character_id: int):
+    async with SessionLocal() as session:
+        statement = select(Character).where(
+            Character.id == character_id
+        )
+
+        result = await session.execute(statement)
+
+        character = result.scalar_one_or_none()
+
+        if character is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Character not found"
+            )
+
+        await session.delete(character)
+        await session.commit()
+
+        return {
+            "message": "Character deleted"
+        }
