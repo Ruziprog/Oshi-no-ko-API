@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import select
 from deps import get_current_user
 
-from schemas import UserCreate, UserLogin
+from fastapi.security import OAuth2PasswordRequestForm
+from schemas import UserCreate
 from models import User
 from database import SessionLocal
 from security import (
@@ -48,17 +49,31 @@ async def register(user: UserCreate):
         }
 
 @app.post("/auth/login")
-async def login(user: UserLogin):
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends()
+):
     async with SessionLocal() as session:
-        statement = select(User).where(User.username == user.username)
+        statement = select(User).where(
+            User.username == form_data.username
+        )
+
         result = await session.execute(statement)
         db_user = result.scalar_one_or_none()
 
         if db_user is None:
-            raise HTTPException(status_code=400, detail="Invalid username or password")
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid username or password"
+            )
 
-        if not verify_password(user.password, db_user.password_hash):
-            raise HTTPException(status_code=400, detail="Invalid username or password")
+        if not verify_password(
+            form_data.password,
+            db_user.password_hash
+        ):
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid username or password"
+            )
 
         access_token = create_access_token(
             db_user.username
