@@ -9,11 +9,13 @@ from security import (
     verify_password,
     create_access_token,
 )
-from models import User, Character
+from models import User, Character, Song, Idol
 from schemas import (
     UserCreate,
     CharacterCreate,
     CharacterResponse,
+    SongCreate,
+    SongResponse,
 )
 
 
@@ -101,13 +103,13 @@ async def get_characters():
     
     
 @app.get(
-    "/characters/{character_name}",
+    "/characters/{character_id}",
     response_model=CharacterResponse
 )
-async def get_character(character_name: str):
+async def get_character(character_id: int):
     async with SessionLocal() as session:
         statement = select(Character).where(
-            Character.name == character_name
+            Character.id == character_id
         )
 
         result = await session.execute(statement)
@@ -128,7 +130,7 @@ async def get_character(character_name: str):
     response_model=CharacterResponse,
     status_code=201
 )
-async def create_character(character: CharacterCreate):
+async def create_character(character: CharacterCreate, current_user: User = Depends(get_current_user)):
     async with SessionLocal() as session:
         new_character = Character(
             name=character.name,
@@ -152,8 +154,8 @@ async def create_character(character: CharacterCreate):
 )
 async def update_character(
     character_id: int,
-    character_data: CharacterCreate
-):
+    character_data: CharacterCreate,
+    current_user: User = Depends(get_current_user)):
     async with SessionLocal() as session:
         statement = select(Character).where(
             Character.id == character_id
@@ -181,7 +183,7 @@ async def update_character(
     
     
 @app.delete("/characters/{character_id}")
-async def delete_character(character_id: int):
+async def delete_character(character_id: int, current_user: User = Depends(get_current_user)):
     async with SessionLocal() as session:
         statement = select(Character).where(
             Character.id == character_id
@@ -202,4 +204,153 @@ async def delete_character(character_id: int):
 
         return {
             "message": "Character deleted"
+        }
+        
+@app.post(
+    "/songs",
+    response_model=SongResponse,
+    status_code=201
+)
+async def create_song(
+    song: SongCreate,
+    current_user: User = Depends(get_current_user)
+):
+    async with SessionLocal() as session:
+        idol = await session.get(Idol, song.idol_id)
+
+        if idol is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Idol not found"
+            )
+
+        new_song = Song(
+            title=song.title,
+            idol_id=song.idol_id
+        )
+
+        session.add(new_song)
+        await session.commit()
+        await session.refresh(new_song)
+
+        return {
+            "id": new_song.id,
+            "title": new_song.title,
+            "idol_id": new_song.idol_id,
+            "idol_name": idol.name
+        }
+    
+    
+@app.get(
+    "/songs",
+    response_model=list[SongResponse]
+)
+async def get_songs():
+    async with SessionLocal() as session:
+        statement = select(Song, Idol).join(Idol, Song.idol_id == Idol.id)
+
+        result = await session.execute(statement)
+
+        songs = result.all()
+
+        return [
+            {
+                "id": song.id,
+                "title": song.title,
+                "idol_id": idol.id,
+                "idol_name": idol.name
+            }
+            for song, idol in songs
+        ]
+    
+    
+@app.get(
+    "/songs/{song_id}",
+    response_model=SongResponse
+)
+async def get_song(song_id: int):
+    async with SessionLocal() as session:
+        statement = (
+            select(Song, Idol)
+            .join(Idol, Song.idol_id == Idol.id)
+            .where(Song.id == song_id)
+        )
+
+        result = await session.execute(statement)
+        row = result.one_or_none()
+
+        if row is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Song not found"
+            )
+
+        song, idol = row
+
+        return {
+            "id": song.id,
+            "title": song.title,
+            "idol_id": idol.id,
+            "idol_name": idol.name
+        }
+    
+@app.get(
+    "/idols/{idol_id}/songs",
+    response_model=list[SongResponse]
+)
+async def get_idol_songs(idol_id: int):
+    async with SessionLocal() as session:
+        statement = (
+            select(Song, Idol)
+            .join(Idol, Song.idol_id == Idol.id)
+            .where(Song.idol_id == idol_id)
+        )
+
+        result = await session.execute(statement)
+        songs = result.all()
+
+        return [
+            {
+                "id": song.id,
+                "title": song.title,
+                "idol_id": idol.id,
+                "idol_name": idol.name
+            }
+            for song, idol in songs
+        ]
+        
+@app.get(
+    "/idols/{idol_id}/songs/{song_id}",
+    response_model=SongResponse
+)
+async def get_idol_song(
+    idol_id: int,
+    song_id: int
+):
+    async with SessionLocal() as session:
+        statement = (
+            select(Song, Idol)
+            .join(Idol, Song.idol_id == Idol.id)
+            .where(
+                Song.id == song_id,
+                Song.idol_id == idol_id
+            )
+        )
+
+        result = await session.execute(statement)
+        row = result.one_or_none()
+
+        if row is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Song not found for this idol"
+            )
+
+        song, idol = row
+
+        return {
+            "id": song.id,
+            "title": song.title,
+            "idol_id": idol.id,
+            "idol_name": idol.name
         }

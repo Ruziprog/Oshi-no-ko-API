@@ -23,3 +23,15 @@ class CharacterResponse(BaseModel):
     age: int
     description: str
     role: str
+    
+    
+class SongCreate(BaseModel):
+    title: str
+    idol_id: int
+
+
+class SongResponse(BaseModel):
+    id: int
+    title: str
+    idol_id: int
+    idol_name: str
