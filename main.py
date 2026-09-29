@@ -3,8 +3,6 @@ from sqlalchemy import select
 from deps import get_current_user
 
 from fastapi.security import OAuth2PasswordRequestForm
-from schemas import UserCreate
-from models import User
 from database import SessionLocal
 from security import (
     hash_password,
@@ -14,7 +12,6 @@ from security import (
 from models import User, Character
 from schemas import (
     UserCreate,
-    UserLogin,
     CharacterCreate,
     CharacterResponse,
 )
