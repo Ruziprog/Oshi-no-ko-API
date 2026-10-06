@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from uuid import UUID
 
 class UserCreate(BaseModel):
     username: str
@@ -13,12 +13,12 @@ class UserLogin(BaseModel):
 
 class CharacterCreate(BaseModel):
     name: str
-    age: int
-    description: str
-    role: str
+    age: int | None = None
+    description: str | None = None
+    role: str | None = None
 
 class CharacterResponse(BaseModel):
-    id: int
+    id: UUID
     name: str
     age: int
     description: str
@@ -27,11 +27,11 @@ class CharacterResponse(BaseModel):
     
 class SongCreate(BaseModel):
     title: str
-    idol_id: int
+    idol_id: UUID
 
 
 class SongResponse(BaseModel):
-    id: int
+    id: UUID
     title: str
-    idol_id: int
+    idol_id: UUID
     idol_name: str

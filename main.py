@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import select
 from deps import get_current_user
@@ -106,7 +107,7 @@ async def get_characters():
     "/characters/{character_id}",
     response_model=CharacterResponse
 )
-async def get_character(character_id: int):
+async def get_character(character_id: UUID):
     async with SessionLocal() as session:
         statement = select(Character).where(
             Character.id == character_id
@@ -153,7 +154,7 @@ async def create_character(character: CharacterCreate, current_user: User = Depe
     response_model=CharacterResponse
 )
 async def update_character(
-    character_id: int,
+    character_id: UUID,
     character_data: CharacterCreate,
     current_user: User = Depends(get_current_user)):
     async with SessionLocal() as session:
@@ -183,7 +184,7 @@ async def update_character(
     
     
 @app.delete("/characters/{character_id}")
-async def delete_character(character_id: int, current_user: User = Depends(get_current_user)):
+async def delete_character(character_id: UUID, current_user: User = Depends(get_current_user)):
     async with SessionLocal() as session:
         statement = select(Character).where(
             Character.id == character_id
@@ -268,7 +269,7 @@ async def get_songs():
     "/songs/{song_id}",
     response_model=SongResponse
 )
-async def get_song(song_id: int):
+async def get_song(song_id: UUID):
     async with SessionLocal() as session:
         statement = (
             select(Song, Idol)
@@ -298,7 +299,7 @@ async def get_song(song_id: int):
     "/idols/{idol_id}/songs",
     response_model=list[SongResponse]
 )
-async def get_idol_songs(idol_id: int):
+async def get_idol_songs(idol_id: UUID):
     async with SessionLocal() as session:
         statement = (
             select(Song, Idol)
@@ -324,8 +325,8 @@ async def get_idol_songs(idol_id: int):
     response_model=SongResponse
 )
 async def get_idol_song(
-    idol_id: int,
-    song_id: int
+    idol_id: UUID,
+    song_id: UUID
 ):
     async with SessionLocal() as session:
         statement = (

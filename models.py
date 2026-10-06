@@ -1,6 +1,7 @@
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
+from uuid import UUID, uuid4
+from sqlalchemy import UUID as SQL_UUID
 
 class Base(DeclarativeBase):
     pass
@@ -8,7 +9,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(SQL_UUID(as_uuid=True), primary_key=True, default=uuid4)
 
     username: Mapped[str] = mapped_column(
         String(50),
@@ -31,7 +32,7 @@ class User(Base):
 class Character(Base):
     __tablename__ = "characters"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(SQL_UUID(as_uuid=True), primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(50), unique=True)
     age: Mapped[int] = mapped_column()
     description: Mapped[str] = mapped_column(String(200))
@@ -47,10 +48,12 @@ class Character(Base):
 class Idol(Character):
     __tablename__ = "idols"
 
-    id: Mapped[int] = mapped_column(
-        ForeignKey("characters.id"), 
-        primary_key=True
-        )
+    id: Mapped[UUID] = mapped_column(
+        SQL_UUID(as_uuid=True),          
+        ForeignKey("characters.id"),     
+        primary_key=True,               
+        default=uuid4                    
+    )
 
 
     songs: Mapped[list["Song"]] = relationship(
@@ -65,7 +68,7 @@ class Idol(Character):
 class Song(Base):
     __tablename__ = "songs"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(SQL_UUID(as_uuid=True), primary_key=True, default=uuid4)
     title: Mapped[str] = mapped_column(String(100))
     idol_id: Mapped[int] = mapped_column(
         ForeignKey("idols.id")
