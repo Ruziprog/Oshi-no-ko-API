@@ -27,11 +27,11 @@ class CharacterResponse(BaseModel):
     
 class SongCreate(BaseModel):
     title: str
-    idol_id: UUID
+    idol_ids: list[UUID]
 
 
 class SongResponse(BaseModel):
     id: UUID
     title: str
-    idol_id: UUID
-    idol_name: str
+    idol_ids: list[UUID]
+    idol_name: list[str]

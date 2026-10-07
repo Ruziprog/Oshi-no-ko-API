@@ -2,6 +2,7 @@ from uuid import UUID
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import select
 from deps import get_current_user
+from sqlalchemy.orm import selectinload
 
 from fastapi.security import OAuth2PasswordRequestForm
 from database import SessionLocal
@@ -217,28 +218,35 @@ async def create_song(
     current_user: User = Depends(get_current_user)
 ):
     async with SessionLocal() as session:
-        idol = await session.get(Idol, song.idol_id)
 
-        if idol is None:
+        statement = select(Idol).where(
+            Idol.id.in_(song.idol_ids)
+        )
+
+        result = await session.execute(statement)
+        idols = result.scalars().all()
+
+        if len(idols) != len(set(song.idol_ids)):
             raise HTTPException(
                 status_code=404,
-                detail="Idol not found"
+                detail="One or more idols not found"
             )
 
         new_song = Song(
             title=song.title,
-            idol_id=song.idol_id
+            idols=idols
         )
 
         session.add(new_song)
+
         await session.commit()
         await session.refresh(new_song)
 
         return {
             "id": new_song.id,
             "title": new_song.title,
-            "idol_id": new_song.idol_id,
-            "idol_name": idol.name
+            "idol_ids": [idol.id for idol in idols],
+            "idol_names": [idol.name for idol in idols]
         }
     
     
@@ -248,20 +256,26 @@ async def create_song(
 )
 async def get_songs():
     async with SessionLocal() as session:
-        statement = select(Song, Idol).join(Idol, Song.idol_id == Idol.id)
+
+        statement = select(Song).options(
+            selectinload(Song.idols)
+        )
 
         result = await session.execute(statement)
-
-        songs = result.all()
+        songs = result.scalars().all()
 
         return [
             {
                 "id": song.id,
                 "title": song.title,
-                "idol_id": idol.id,
-                "idol_name": idol.name
+                "idol_ids": [
+                    idol.id for idol in song.idols
+                ],
+                "idol_names": [
+                    idol.name for idol in song.idols
+                ]
             }
-            for song, idol in songs
+            for song in songs
         ]
     
     
@@ -271,28 +285,31 @@ async def get_songs():
 )
 async def get_song(song_id: UUID):
     async with SessionLocal() as session:
+
         statement = (
-            select(Song, Idol)
-            .join(Idol, Song.idol_id == Idol.id)
+            select(Song)
+            .options(selectinload(Song.idols))
             .where(Song.id == song_id)
         )
 
         result = await session.execute(statement)
-        row = result.one_or_none()
+        song = result.scalar_one_or_none()
 
-        if row is None:
+        if song is None:
             raise HTTPException(
                 status_code=404,
                 detail="Song not found"
             )
 
-        song, idol = row
-
         return {
             "id": song.id,
             "title": song.title,
-            "idol_id": idol.id,
-            "idol_name": idol.name
+            "idol_ids": [
+                idol.id for idol in song.idols
+            ],
+            "idol_names": [
+                idol.name for idol in song.idols
+            ]
         }
     
 @app.get(
@@ -301,23 +318,37 @@ async def get_song(song_id: UUID):
 )
 async def get_idol_songs(idol_id: UUID):
     async with SessionLocal() as session:
+
+        idol = await session.get(Idol, idol_id)
+
+        if idol is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Idol not found"
+            )
+
         statement = (
-            select(Song, Idol)
-            .join(Idol, Song.idol_id == Idol.id)
-            .where(Song.idol_id == idol_id)
+            select(Song)
+            .join(Song.idols)
+            .options(selectinload(Song.idols))
+            .where(Idol.id == idol_id)
         )
 
         result = await session.execute(statement)
-        songs = result.all()
+        songs = result.scalars().all()
 
         return [
             {
                 "id": song.id,
                 "title": song.title,
-                "idol_id": idol.id,
-                "idol_name": idol.name
+                "idol_ids": [
+                    idol.id for idol in song.idols
+                ],
+                "idol_names": [
+                    idol.name for idol in song.idols
+                ]
             }
-            for song, idol in songs
+            for song in songs
         ]
         
 @app.get(
@@ -329,29 +360,33 @@ async def get_idol_song(
     song_id: UUID
 ):
     async with SessionLocal() as session:
+
         statement = (
-            select(Song, Idol)
-            .join(Idol, Song.idol_id == Idol.id)
+            select(Song)
+            .join(Song.idols)
+            .options(selectinload(Song.idols))
             .where(
                 Song.id == song_id,
-                Song.idol_id == idol_id
+                Idol.id == idol_id
             )
         )
 
         result = await session.execute(statement)
-        row = result.one_or_none()
+        song = result.scalar_one_or_none()
 
-        if row is None:
+        if song is None:
             raise HTTPException(
                 status_code=404,
                 detail="Song not found for this idol"
             )
 
-        song, idol = row
-
         return {
             "id": song.id,
             "title": song.title,
-            "idol_id": idol.id,
-            "idol_name": idol.name
+            "idol_ids": [
+                idol.id for idol in song.idols
+            ],
+            "idol_names": [
+                idol.name for idol in song.idols
+            ]
         }
