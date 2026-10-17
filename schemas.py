@@ -34,4 +34,4 @@ class SongResponse(BaseModel):
     id: UUID
     title: str
     idol_ids: list[UUID]
-    idol_name: list[str]
+    idol_names: list[str]

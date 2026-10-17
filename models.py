@@ -1,4 +1,4 @@
-from sqlalchemy import String, ForeignKey, Table, Column
+from sqlalchemy import String, ForeignKey, Table, Column, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from uuid import UUID, uuid4
@@ -113,6 +113,10 @@ song_idols = Table(
 
 class Song(Base):
     __tablename__ = "songs"
+    
+    __table_args__ = (
+    UniqueConstraint("title", name="uq_songs_title"),
+)
 
     id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),

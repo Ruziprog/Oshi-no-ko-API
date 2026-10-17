@@ -28,11 +28,38 @@ app = FastAPI(title="Oshi no Ko API", description="API for Oshi no Ko", version=
 async def read_root():
     return {"message": "Welcome to the Oshi no Ko API!"}
 
-@app.post("/auth/register")
+
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
+
+
+@app.post("/auth/register", status_code=201)
 async def register(user: UserCreate):
     hashed_password = hash_password(user.password)
 
     async with SessionLocal() as session:
+        statement = select(User).where(
+            (User.username == user.username)
+            | (User.email == user.email)
+        )
+
+        result = await session.execute(statement)
+        existing_user = result.scalars().first()
+
+        if existing_user:
+            if existing_user.username == user.username:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Username already registered"
+                )
+
+            if existing_user.email == user.email:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Email already registered"
+                )
+
         new_user = User(
             username=user.username,
             email=user.email,
@@ -40,14 +67,25 @@ async def register(user: UserCreate):
         )
 
         session.add(new_user)
-        await session.commit()
-        await session.refresh(new_user)
+
+        try:
+            await session.commit()
+            await session.refresh(new_user)
+
+        except IntegrityError:
+            await session.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Username or email already registered"
+            )
 
         return {
             "id": new_user.id,
             "username": new_user.username,
             "email": new_user.email
         }
+
+
 
 @app.post("/auth/login")
 async def login(
@@ -61,19 +99,14 @@ async def login(
         result = await session.execute(statement)
         db_user = result.scalar_one_or_none()
 
-        if db_user is None:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid username or password"
-            )
-
-        if not verify_password(
+        if db_user is None or not verify_password(
             form_data.password,
             db_user.password_hash
         ):
             raise HTTPException(
                 status_code=401,
-                detail="Invalid username or password"
+                detail="Invalid username or password",
+                headers={"WWW-Authenticate": "Bearer"}
             )
 
         access_token = create_access_token(
@@ -84,6 +117,7 @@ async def login(
             "access_token": access_token,
             "token_type": "bearer"
         }
+
 
 
 @app.get("/auth/me")
@@ -218,19 +252,51 @@ async def create_song(
     current_user: User = Depends(get_current_user)
 ):
     async with SessionLocal() as session:
+        idol_ids = set(song.idol_ids)
 
         statement = select(Idol).where(
-            Idol.id.in_(song.idol_ids)
+            Idol.id.in_(idol_ids)
         )
 
         result = await session.execute(statement)
         idols = result.scalars().all()
 
-        if len(idols) != len(set(song.idol_ids)):
+        if len(idols) != len(idol_ids):
             raise HTTPException(
                 status_code=404,
                 detail="One or more idols not found"
             )
+            
+        statement = (
+            select(Song)
+            .options(selectinload(Song.idols))
+            .where(Song.title == song.title)
+        )
+
+        result = await session.execute(statement)
+        existing_song = result.scalar_one_or_none()
+
+        if existing_song:
+            existing_idol_ids = {
+                idol.id for idol in existing_song.idols
+            }
+
+            for idol in idols:
+                if idol.id not in existing_idol_ids:
+                    existing_song.idols.append(idol)
+
+            await session.commit()
+
+            return {
+                "id": existing_song.id,
+                "title": existing_song.title,
+                "idol_ids": [
+                    idol.id for idol in existing_song.idols
+                ],
+                "idol_names": [
+                    idol.name for idol in existing_song.idols
+                ]
+            }
 
         new_song = Song(
             title=song.title,
@@ -238,17 +304,19 @@ async def create_song(
         )
 
         session.add(new_song)
-
         await session.commit()
-        await session.refresh(new_song)
 
         return {
             "id": new_song.id,
             "title": new_song.title,
-            "idol_ids": [idol.id for idol in idols],
-            "idol_names": [idol.name for idol in idols]
+            "idol_ids": [
+                idol.id for idol in idols
+            ],
+            "idol_names": [
+                idol.name for idol in idols
+            ]
         }
-    
+
     
 @app.get(
     "/songs",
