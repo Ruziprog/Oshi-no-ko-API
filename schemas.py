@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from uuid import UUID
 
 class UserCreate(BaseModel):
@@ -13,7 +13,7 @@ class UserLogin(BaseModel):
 
 class CharacterCreate(BaseModel):
     name: str
-    age: int | None = None
+    age: int = Field(ge=0)
     description: str | None = None
     role: str | None = None
 
