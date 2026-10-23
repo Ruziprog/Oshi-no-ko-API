@@ -32,7 +32,7 @@ class User(Base):
     )
 
     password_hash: Mapped[str] = mapped_column(
-        String(100),
+        String(255),
         nullable=False
     )
 
@@ -48,21 +48,25 @@ class Character(Base):
 
     name: Mapped[str] = mapped_column(
         String(50),
-        unique=True
+        unique=True,
+        nullable=False
     )
 
-    age: Mapped[int] = mapped_column()
+    age: Mapped[int] = mapped_column(nullable=False)
 
     description: Mapped[str] = mapped_column(
-        String(200)
+        String(200),
+        nullable=True
     )
 
     role: Mapped[str] = mapped_column(
-        String(50)
+        String(50),
+        nullable=True
     )
 
     type: Mapped[str] = mapped_column(
-        String(50)
+        String(50),
+        nullable=False
     )
 
     __mapper_args__ = {
@@ -76,7 +80,7 @@ class Idol(Character):
 
     id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),
-        ForeignKey("characters.id"),
+        ForeignKey("characters.id", ondelete="CASCADE"),
         primary_key=True
     )
 
@@ -98,7 +102,7 @@ song_idols = Table(
     Column(
         "song_id",
         SQL_UUID(as_uuid=True),
-        ForeignKey("songs.id", ondelete="CASCADE"),
+        ForeignKey("characters.id", ondelete="CASCADE"),
         primary_key=True
     ),
 
@@ -125,7 +129,8 @@ class Song(Base):
     )
 
     title: Mapped[str] = mapped_column(
-        String(100)
+        String(100),
+        nullable=False
     )
 
     idols: Mapped[list["Idol"]] = relationship(
