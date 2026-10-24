@@ -20,7 +20,7 @@ if not ENV_TEST_PATH.is_file():
 
 load_dotenv(ENV_TEST_PATH, override=True)
 
-test_database_url = os.getenv("DATABASE_URL")
+test_database_url = os.getenv("DATABASE_URL1")
 
 if not test_database_url:
     raise ValueError("DATABASE_URL is missing in .env.test")

@@ -39,7 +39,12 @@ class User(Base):
 
 class Character(Base):
     __tablename__ = "characters"
-
+    
+    
+    __table_args__ = (
+    UniqueConstraint("name", name="uq_characters_name"),
+)
+    
     id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),
         primary_key=True,
@@ -48,7 +53,6 @@ class Character(Base):
 
     name: Mapped[str] = mapped_column(
         String(50),
-        unique=True,
         nullable=False
     )
 
@@ -102,7 +106,7 @@ song_idols = Table(
     Column(
         "song_id",
         SQL_UUID(as_uuid=True),
-        ForeignKey("characters.id", ondelete="CASCADE"),
+        ForeignKey("songs.id", ondelete="CASCADE"),
         primary_key=True
     ),
 
