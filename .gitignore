@@ -219,3 +219,8 @@ __marimo__/
 .env
 *.db.env.test
 .env.test
+
+
+# Database backups
+*.dump
+*.backup
