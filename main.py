@@ -245,77 +245,78 @@ async def delete_character(character_id: UUID, current_user: User = Depends(get_
 @app.post(
     "/songs",
     response_model=SongResponse,
-    status_code=201
+    status_code=201,
 )
 async def create_song(
     song: SongCreate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
-    async with SessionLocal() as session:
-        idol_ids = set(song.idol_ids)
-
-        statement = select(Idol).where(
-            Idol.id.in_(idol_ids)
+    if len(song.idol_ids) != len(set(song.idol_ids)):
+        raise HTTPException(
+            status_code=422,
+            detail="Duplicate idol IDs are not allowed",
         )
 
+    async with SessionLocal() as session:
+        statement = select(Idol).where(
+            Idol.id.in_(song.idol_ids)
+        )
         result = await session.execute(statement)
         idols = result.scalars().all()
 
-        if len(idols) != len(idol_ids):
+        if len(idols) != len(song.idol_ids):
             raise HTTPException(
                 status_code=404,
-                detail="One or more idols not found"
+                detail="One or more idols not found",
             )
-            
-        statement = (
-            select(Song)
-            .options(selectinload(Song.idols))
-            .where(Song.title == song.title)
+
+        statement = select(Song).where(
+            Song.title == song.title
         )
-
         result = await session.execute(statement)
-        existing_song = result.scalar_one_or_none()
 
-        if existing_song:
-            existing_idol_ids = {
-                idol.id for idol in existing_song.idols
-            }
-
-            for idol in idols:
-                if idol.id not in existing_idol_ids:
-                    existing_song.idols.append(idol)
-
-            await session.commit()
-
-            return {
-                "id": existing_song.id,
-                "title": existing_song.title,
-                "idol_ids": [
-                    idol.id for idol in existing_song.idols
-                ],
-                "idol_names": [
-                    idol.name for idol in existing_song.idols
-                ]
-            }
+        if result.scalar_one_or_none() is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="Song title already exists",
+            )
 
         new_song = Song(
             title=song.title,
-            idols=idols
+            idols=idols,
         )
-
         session.add(new_song)
-        await session.commit()
+
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Song title already exists",
+            )
+
+        await session.refresh(new_song)
+
+        statement = (
+            select(Song)
+            .options(selectinload(Song.idols))
+            .where(Song.id == new_song.id)
+        )
+        result = await session.execute(statement)
+        created_song = result.scalar_one()
 
         return {
-            "id": new_song.id,
-            "title": new_song.title,
+            "id": created_song.id,
+            "title": created_song.title,
             "idol_ids": [
-                idol.id for idol in idols
+                idol.id for idol in created_song.idols
             ],
             "idol_names": [
-                idol.name for idol in idols
-            ]
+                idol.name for idol in created_song.idols
+            ],
         }
+
 
     
 @app.get(
