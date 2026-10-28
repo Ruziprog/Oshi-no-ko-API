@@ -216,9 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-.env
+.env*
 *.db.env.test
-.env.test
 
 
 # Database backups

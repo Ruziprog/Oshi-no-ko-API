@@ -140,7 +140,8 @@ async def get_characters():
     
 @app.get(
     "/characters/{character_id}",
-    response_model=CharacterResponse
+    response_model=CharacterResponse,
+    responses={404: {"description": "Dolbayob! zdes net takogo personazha!"}}
 )
 async def get_character(character_id: UUID):
     async with SessionLocal() as session:
