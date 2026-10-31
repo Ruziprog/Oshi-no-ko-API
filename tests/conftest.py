@@ -73,3 +73,27 @@ async def client(monkeypatch):
             await conn.run_sync(Base.metadata.drop_all)
 
         await test_engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def auth_headers(client):
+    await client.post(
+        "/auth/register",
+        json={
+            "username": "TestUser",
+            "email": "testuser@example.com",
+            "password": "testpassword123",
+        },
+    )
+
+    response = await client.post(
+        "/auth/login",
+        data={
+            "username": "TestUser",
+            "password": "testpassword123",
+        },
+    )
+
+    token = response.json()["access_token"]
+
+    return {"Authorization": f"Bearer {token}"}
