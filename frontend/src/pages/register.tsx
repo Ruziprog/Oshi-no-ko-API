@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { registerUser } from '../api/auth'
 
@@ -13,7 +13,7 @@ function Register() {
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault()
 

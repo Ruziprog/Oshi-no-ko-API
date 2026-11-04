@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import select
 from deps import get_current_user
 from sqlalchemy.orm import selectinload
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.security import OAuth2PasswordRequestForm
 from database import SessionLocal
@@ -22,6 +23,13 @@ from schemas import (
 
 
 app = FastAPI(title="Oshi no Ko API", description="API for Oshi no Ko", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

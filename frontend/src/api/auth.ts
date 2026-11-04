@@ -17,7 +17,7 @@ export async function loginUser(data: LoginRequest):
     Promise<TokenResponse> {
         const FormData = new URLSearchParams();
 
-        FormData.append('email', data.email);
+        FormData.append('username', data.username);
         FormData.append('password', data.password);
 
         const response = await api.post<TokenResponse>('/auth/login', FormData, {
@@ -27,3 +27,7 @@ export async function loginUser(data: LoginRequest):
         });
         return response.data;
     }
+
+export function saveToken(token: string) {
+    localStorage.setItem('access_token', token)
+}
