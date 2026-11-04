@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from 'react'
-import { loginUser, saveToken } from '../api/auth'
+import { loginUser } from '../api/auth'
+
+import { useAuth } from '../context/useAuth'
 
 
 function Login() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const { login } = useAuth()
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -16,7 +19,7 @@ function Login() {
         password,
 })
 
-saveToken(token.access_token)
+await login(token.access_token)
 
 
         alert('Вы вошли в аккаунт!')

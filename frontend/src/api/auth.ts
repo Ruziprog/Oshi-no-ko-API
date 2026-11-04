@@ -1,5 +1,6 @@
 import api from './client';
 
+
 import type {
     RegisterRequest,
     LoginRequest, 
@@ -15,12 +16,12 @@ export async function registerUser(data: RegisterRequest):
 
 export async function loginUser(data: LoginRequest):
     Promise<TokenResponse> {
-        const FormData = new URLSearchParams();
+        const formData = new URLSearchParams();
 
-        FormData.append('username', data.username);
-        FormData.append('password', data.password);
+        formData.append('username', data.username);
+        formData.append('password', data.password);
 
-        const response = await api.post<TokenResponse>('/auth/login', FormData, {
+        const response = await api.post<TokenResponse>('/auth/login', formData, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
@@ -30,4 +31,9 @@ export async function loginUser(data: LoginRequest):
 
 export function saveToken(token: string) {
     localStorage.setItem('access_token', token)
+}
+
+export async function getCurrentUser(): Promise<UserResponse> {
+    const response = await api.get<UserResponse>('/auth/me')
+    return response.data
 }
