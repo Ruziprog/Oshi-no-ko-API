@@ -1,69 +1,109 @@
+
 import { useState, type FormEvent } from 'react'
 import { loginUser } from '../api/auth'
-
 import { useAuth } from '../context/useAuth'
-
+import AiMascot from '../components/AiMascot'
+import '../styles/Login.scss'
 
 function Login() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+
     const { login } = useAuth()
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+        event.preventDefault()
 
-    try {
-    const token = await loginUser({
-        username,
-        password,
-})
+        try {
+            const token = await loginUser({
+                username,
+                password,
+            })
 
-await login(token.access_token)
+            await login(token.access_token)
 
-
-        alert('Вы вошли в аккаунт!')
-    } catch {
-        alert('Неверный username или password')
+            alert('Вы вошли в аккаунт!')
+        } catch {
+            alert('Неверный username или password')
+        }
     }
-}
 
     return (
-    <main>
-        <h1>Login</h1>
+        <main className="login-page">
 
-    <form onSubmit={handleSubmit}>
-        <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        required
-        />
+            <div className="login-glow login-glow--pink" />
+            <div className="login-glow login-glow--purple" />
 
-        <div>
-    <input
-    type={showPassword ? 'text' : 'password'}
-    placeholder="Password"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    required
-/>
+            <AiMascot />
 
-    <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
->
-    {showPassword ? 'Hide password' : 'Show password'}
-    </button>
-</div>
+            <section className="login-card">
 
-        <button type="submit">
-        Login
-        </button>
-    </form>
-    </main>
-)
+                <div className="login-logo">
+                    <span>OSHI</span>
+                    <span className="logo-no">NO</span>
+                    <span className="logo-ko">KO</span>
+                </div>
+
+                <h1>Welcome Back</h1>
+
+                <p className="login-subtitle">
+                    Your story continues here.
+                </p>
+
+                <form onSubmit={handleSubmit}>
+
+                    <div className="login-field">
+                        <label htmlFor="username">Username</label>
+
+                        <input
+                            id="username"
+                            type="text"
+                            placeholder="Enter your username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="login-field">
+                        <label htmlFor="password">Password</label>
+
+                        <div className="password-wrapper">
+                            <input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? 'Hide' : 'Show'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button className="login-button" type="submit">
+                        LOGIN
+                    </button>
+
+                </form>
+
+                <p className="login-footer">
+                    OSHI NO KO API
+                    <span> • </span>
+                    2026
+                </p>
+
+            </section>
+        </main>
+    )
 }
 
 export default Login
