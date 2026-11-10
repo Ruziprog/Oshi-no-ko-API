@@ -13,6 +13,7 @@ export interface UserResponse {
     id: string;
     username: string;
     email: string;
+    avatar_url: string;
 }
 
 export interface TokenResponse {

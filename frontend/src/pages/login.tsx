@@ -2,7 +2,6 @@
 import { useState, type FormEvent } from 'react'
 import { loginUser } from '../api/auth'
 import { useAuth } from '../context/useAuth'
-import AiMascot from '../components/AiMascot'
 import '../styles/Login.scss'
 
 function Login() {
@@ -34,8 +33,6 @@ function Login() {
 
             <div className="login-glow login-glow--pink" />
             <div className="login-glow login-glow--purple" />
-
-            <AiMascot />
 
             <section className="login-card">
 

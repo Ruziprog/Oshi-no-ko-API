@@ -35,6 +35,12 @@ class User(Base):
         String(255),
         nullable=False
     )
+    
+    avatar_url: Mapped[str] = mapped_column(
+        String(255),
+        nullable=True,
+        default=None
+    )
 
 
 class Character(Base):

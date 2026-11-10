@@ -1,6 +1,9 @@
 from uuid import UUID
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
 from sqlalchemy import select
+from pathlib import Path
+from uuid import uuid4
+import shutil
 from deps import get_current_user
 from sqlalchemy.orm import selectinload
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +34,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+UPLOAD_DIR = Path("uploads/avatars")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/")
 async def read_root():
@@ -71,7 +81,8 @@ async def register(user: UserCreate):
         new_user = User(
             username=user.username,
             email=user.email,
-            password_hash=hashed_password
+            password_hash=hashed_password,
+            avatar_url=None
         )
 
         session.add(new_user)
@@ -90,7 +101,8 @@ async def register(user: UserCreate):
         return {
             "id": new_user.id,
             "username": new_user.username,
-            "email": new_user.email
+            "email": new_user.email,
+            "avatar_url": new_user.avatar_url
         }
 
 
@@ -133,8 +145,116 @@ async def get_me(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
         "username": current_user.username,
-        "email": current_user.email
+        "email": current_user.email,
+        "avatar_url": current_user.avatar_url
     }
+    
+    
+MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5 MB
+
+ALLOWED_IMAGES = {
+    "image/jpeg": (".jpg", lambda data: data.startswith(b"\xff\xd8\xff")),
+    "image/png": (
+        ".png",
+        lambda data: data.startswith(b"\x89PNG\r\n\x1a\n")
+    ),
+    "image/webp": (
+        ".webp",
+        lambda data: (
+            data.startswith(b"RIFF") and data[8:12] == b"WEBP"
+        )
+    ),
+}
+
+
+@app.post("/users/me/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    image_data = await file.read(MAX_AVATAR_SIZE + 1)
+
+    if len(image_data) > MAX_AVATAR_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail="Image is too large. Maximum size is 5 MB."
+        )
+
+    image_type = ALLOWED_IMAGES.get(file.content_type)
+
+    if image_type is None:
+        raise HTTPException(
+            status_code=415,
+            detail="Only JPEG, PNG and WEBP images are allowed."
+        )
+
+    extension, validator = image_type
+
+    if not validator(image_data):
+        raise HTTPException(
+            status_code=415,
+            detail="Invalid image file."
+        )
+
+    filename = f"{uuid4().hex}{extension}"
+    file_path = UPLOAD_DIR / filename
+
+    file_path.write_bytes(image_data)
+
+    async with SessionLocal() as session:
+        user = await session.get(User, current_user.id)
+
+        if user is None:
+            file_path.unlink(missing_ok=True)
+            raise HTTPException(status_code=404, detail="User not found")
+
+        old_avatar = user.avatar_url
+
+        user.avatar_url = f"/uploads/avatars/{filename}"
+
+        try:
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            file_path.unlink(missing_ok=True)
+            raise
+
+        if old_avatar:
+            old_filename = Path(old_avatar).name
+            old_path = UPLOAD_DIR / old_filename
+
+            if old_path.is_file():
+                old_path.unlink()
+
+        return {"avatar_url": user.avatar_url}
+    
+    @app.delete("/users/me/avatar")
+    async def delete_avatar(
+        current_user: User = Depends(get_current_user)
+):
+        async with SessionLocal() as session:
+            user = await session.get(User, current_user.id)
+
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if not user.avatar_url:
+            raise HTTPException(
+                status_code=404,
+                detail="Avatar not found"
+            )
+
+        old_filename = Path(user.avatar_url).name
+        old_path = UPLOAD_DIR / old_filename
+
+        user.avatar_url = None
+
+        await session.commit()
+
+        if old_path.is_file():
+            old_path.unlink()
+
+        return {"message": "Avatar deleted"}
 
 
 @app.get("/characters", response_model=list[CharacterResponse])
