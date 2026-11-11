@@ -2,6 +2,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { registerUser } from '../api/auth'
+import '../styles/register.scss'
 
 function Register() {
   const [username, setUsername] = useState('')
@@ -53,7 +54,8 @@ function Register() {
 
   return (
     <main>
-      <h1>Create account</h1>
+      <div className="card">
+        <h1>Create account</h1>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -95,6 +97,7 @@ function Register() {
       <p>
         Already have an account? <Link to="/login">Login</Link>
       </p>
+      </div>
     </main>
   )
 }
