@@ -51,6 +51,9 @@ function Characters() {
                                 <img
                                     src={character.image_url}
                                     alt={character.name}
+                                    onError={(event) => {
+                                        event.currentTarget.style.display = 'none'
+                                    }} 
                                 />
                             ) : (
                                 <div className="image-placeholder">
