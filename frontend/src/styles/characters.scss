@@ -1,0 +1,123 @@
+.characters-page {
+    min-height: 100vh;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 50px 5%;
+    box-sizing: border-box;
+    background: #100d18;
+    color: #fff;
+}
+
+.characters-header {
+    text-align: center;
+    margin-bottom: 45px;
+
+    h1 {
+        font-size: 42px;
+        color: #ff70b8;
+        margin-bottom: 10px;
+    }
+
+    p {
+        color: #aaa0b8;
+        font-size: 16px;
+    }
+}
+
+.characters-grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+    align-items: stretch;
+}
+
+.character-card {
+    overflow: hidden;
+    background: #1c1728;
+    border: 1px solid #392846;
+    border-radius: 16px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+    &:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 8px 30px #d64caa30;
+    }
+}
+
+.character-image {
+    width: 100%;
+    height: 280px;
+    background: #292034;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.image-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8f829d;
+}
+
+.character-info {
+    padding: 20px;
+
+    h2 {
+        font-size: 21px;
+        margin: 0 0 10px;
+    }
+}
+
+.character-role {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #a83f91;
+    color: white;
+    font-size: 12px;
+}
+
+.character-age {
+    color: #c7b5d6;
+    margin: 14px 0 8px;
+}
+
+.character-description {
+    color: #aaa0b8;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.empty-message {
+    text-align: center;
+    color: #aaa0b8;
+}
+
+@media (max-width: 600px) {
+    .characters-page {
+        padding: 35px 5%;
+    }
+
+    .characters-header h1 {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 900px) {
+    .characters-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .characters-grid {
+        grid-template-columns: 1fr;
+    }
+}

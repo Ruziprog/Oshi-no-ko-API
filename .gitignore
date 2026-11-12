@@ -223,3 +223,5 @@ __marimo__/
 # Database backups
 *.dump
 *.backup
+
+jp.txt

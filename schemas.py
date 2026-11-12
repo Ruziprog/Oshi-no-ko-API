@@ -20,6 +20,7 @@ class CharacterCreate(BaseModel):
     age: int = Field(ge=0)
     description: str | None = Field(default=None, max_length=200)
     role: str | None = Field(default=None, max_length=50)
+    image_url: str | None = Field(default=None, max_length=500)
 
 
 class CharacterResponse(BaseModel):
@@ -30,7 +31,7 @@ class CharacterResponse(BaseModel):
     age: int
     description: str | None = None
     role: str | None = None
-
+    image_url: str | None = None
 
 class SongCreate(BaseModel):
     title: str = Field(min_length=1, max_length=100)

@@ -83,6 +83,11 @@ class Character(Base):
         "polymorphic_on": type,
         "polymorphic_identity": "character"
     }
+    
+    image_url: Mapped[str] = mapped_column(
+        String(255),
+        nullable=True,
+    )
 
 
 class Idol(Character):

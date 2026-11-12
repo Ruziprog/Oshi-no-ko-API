@@ -302,7 +302,8 @@ async def create_character(character: CharacterCreate, current_user: User = Depe
             age=character.age,
             description=character.description,
             role=character.role,
-            type="character"
+            type="character",
+            image_url=character.image_url
         )
 
         session.add(new_character)
@@ -340,6 +341,7 @@ async def update_character(
         character.age = character_data.age
         character.description = character_data.description
         character.role = character_data.role
+        character.image_url = character_data.image_url
 
         await session.commit()
         await session.refresh(character)

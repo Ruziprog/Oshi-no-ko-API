@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Hoshino Ai",
+    "age": 16,
+    "description": "A famous idol and the center of B-Komachi.",
+    "role": "Idol",
+    "image_url": null
+  },
+  {
+    "name": "Hoshino Aqua",
+    "age": 16,
+    "description": "Ai's son who pursues a career in acting.",
+    "role": "Actor",
+    "image_url": null
+  },
+  {
+    "name": "Hoshino Ruby",
+    "age": 16,
+    "description": "Ai's daughter who dreams of becoming an idol.",
+    "role": "Idol",
+    "image_url": null
+  },
+  {
+    "name": "Arima Kana",
+    "age": 17,
+    "description": "A talented actress and former child prodigy.",
+    "role": "Actress",
+    "image_url": null
+  },
+  {
+    "name": "Kurokawa Akane",
+    "age": 17,
+    "description": "A talented actress known for her analytical skills.",
+    "role": "Actress",
+    "image_url": null
+  },
+  {
+    "name": "MEM-cho",
+    "age": 25,
+    "description": "A popular content creator and B-Komachi member.",
+    "role": "Idol",
+    "image_url": null
+  }
+]
