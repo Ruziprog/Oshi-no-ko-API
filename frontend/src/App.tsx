@@ -5,6 +5,7 @@ import Navbar from './components/navbar'
 import Register from './pages/register'
 import Login from './pages/login'
 import { AuthProvider } from './context/authContext'
+import CharacterDetail from './pages/character_detail'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/characters" element={<Characters />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/characters/:id" element={<CharacterDetail />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

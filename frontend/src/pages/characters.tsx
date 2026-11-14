@@ -1,4 +1,4 @@
-
+import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { getCharacters } from '../api/characters'
 import type { Character } from '../types/characters'
@@ -45,7 +45,11 @@ function Characters() {
         ) : (
             <div className="characters-grid">
                 {characters.map((character) => (
-                    <article className="character-card" key={character.id}>
+                <Link
+                to={`/characters/${character.id}`}
+                className="character-card"
+                key={character.id}>
+                
                         <div className="character-image">
                             {character.image_url ? (
                                 <img
@@ -74,7 +78,7 @@ function Characters() {
                                 {character.description ?? 'No description.'}
                             </p>
                         </div>
-                    </article>
+                    </Link>
                 ))}
             </div>
         )}

@@ -7,6 +7,8 @@ import shutil
 from deps import get_current_user
 from sqlalchemy.orm import selectinload
 from fastapi.middleware.cors import CORSMiddleware
+from ai_service import generate_character_profile
+from schemas import AIProfileResponse
 
 from fastapi.security import OAuth2PasswordRequestForm
 from database import SessionLocal
@@ -590,3 +592,41 @@ async def get_idol_song(
                 idol.name for idol in song.idols
             ]
         }
+
+@app.post(
+    "/ai/characters/{character_id}",
+    response_model=AIProfileResponse
+)
+async def generate_character_ai_profile(
+    character_id: UUID,
+    current_user: User = Depends(get_current_user)
+):
+    async with SessionLocal() as session:
+        statement = select(Character).where(
+            Character.id == character_id
+        )
+
+        result = await session.execute(statement)
+        character = result.scalar_one_or_none()
+
+        if character is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Character not found"
+            )
+
+        try:
+            profile = await generate_character_profile(
+                name=character.name,
+                age=character.age,
+                role=character.role,
+                description=character.description
+            )
+
+        except RuntimeError:
+            raise HTTPException(
+                status_code=503,
+                detail="AI service is not configured"
+            )
+
+        return {"profile": profile}

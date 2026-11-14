@@ -43,3 +43,6 @@ class SongResponse(BaseModel):
     title: str
     idol_ids: list[UUID]
     idol_names: list[str]
+
+class AIProfileResponse(BaseModel):
+    profile: str
