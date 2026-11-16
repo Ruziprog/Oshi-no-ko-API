@@ -44,6 +44,14 @@
         transform: translateY(-7px);
         box-shadow: 0 8px 30px #d64caa30;
     }
+
+    img {
+        width: 100%;
+        height: 280px;
+        object-fit: contain;
+        object-position: center top;
+        display: block;
+    }
 }
 
 .character-image {
