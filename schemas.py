@@ -1,6 +1,6 @@
 
 from uuid import UUID
-
+from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 
 
@@ -21,6 +21,7 @@ class CharacterCreate(BaseModel):
     description: str | None = Field(default=None, max_length=200)
     role: str | None = Field(default=None, max_length=50)
     image_url: str | None = Field(default=None, max_length=500)
+    profile: dict[str, Any] | None = None
 
 
 class CharacterResponse(BaseModel):
@@ -32,6 +33,7 @@ class CharacterResponse(BaseModel):
     description: str | None = None
     role: str | None = None
     image_url: str | None = None
+    profile: dict[str, Any] | None = None
 
 class SongCreate(BaseModel):
     title: str = Field(min_length=1, max_length=100)

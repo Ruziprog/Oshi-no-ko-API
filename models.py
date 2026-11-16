@@ -1,6 +1,6 @@
 from sqlalchemy import String, ForeignKey, Table, Column, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
+from sqlalchemy.dialects.postgresql import JSONB
 from uuid import UUID, uuid4
 
 from sqlalchemy import UUID as SQL_UUID
@@ -87,6 +87,12 @@ class Character(Base):
     image_url: Mapped[str] = mapped_column(
         String(255),
         nullable=True,
+    )
+    
+    profile: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=None
     )
 
 

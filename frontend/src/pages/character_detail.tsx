@@ -1,9 +1,9 @@
+
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getCharacterById } from '../api/characters'
 import type { Character } from '../types/characters'
 import '../styles/character_detail.scss'
-
 
 function CharacterDetail() {
     const { id } = useParams<{ id: string }>()
@@ -38,28 +38,75 @@ function CharacterDetail() {
         return <main><p>{error ?? 'Character not found.'}</p></main>
     }
 
+    const profileSections = [
+        {
+            title: 'Biography',
+            content: character.profile?.biography,
+        },
+        {
+            title: 'Personality',
+            content: character.profile?.personality,
+        },
+        {
+            title: 'Abilities & Skills',
+            content: character.profile?.abilities,
+        },
+        {
+            title: 'Relationships',
+            content: character.profile?.relationships,
+        },
+        {
+            title: 'Trivia',
+            content: character.profile?.trivia,
+        },
+        {
+            title: 'Character Analysis',
+            content: character.profile?.analysis,
+        },
+    ]
+
     return (
         <main className="character-detail">
-            <div className="character-detail-image">
-                {character.image_url && (
-                    <img
-                        src={character.image_url}
-                        alt={character.name}
-                    />
-                )}
-            </div>
+            <section className="character-detail-header">
+                <div className="character-detail-image">
+                    {character.image_url && (
+                        <img
+                            src={character.image_url}
+                            alt={character.name}
+                        />
+                    )}
+                </div>
 
-            <div className="character-detail-info">
-                <h1>{character.name}</h1>
+                <div className="character-detail-info">
+                    <h1>{character.name}</h1>
 
-                <span className="character-detail-role">
-                    {character.role ?? 'Unknown'}
-                </span>
+                    <span className="character-detail-role">
+                        {character.role ?? 'Unknown'}
+                    </span>
 
-                <p>Age: {character.age}</p>
+                    <p>Age: {character.age}</p>
 
-                <p>{character.description ?? 'No description.'}</p>
-            </div>
+                    <p>
+                        {character.description ?? 'No description.'}
+                    </p>
+                </div>
+            </section>
+
+            {character.profile && (
+                <section className="character-profile">
+                    {profileSections.map((section) => (
+                        <article
+                            className="character-profile-section"
+                            key={section.title}
+                        >
+                            <h2>{section.title}</h2>
+                            <p>
+                                {section.content ?? 'No information available.'}
+                            </p>
+                        </article>
+                    ))}
+                </section>
+            )}
         </main>
     )
 }
