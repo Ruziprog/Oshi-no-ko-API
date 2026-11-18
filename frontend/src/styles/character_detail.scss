@@ -1,6 +1,14 @@
 
 .character-detail {
     position: relative;
+    display: grid;
+    grid-template-columns:
+        minmax(280px, 0.95fr)
+        minmax(220px, 0.8fr)
+        minmax(560px, 2fr);
+    align-items: center;
+    column-gap: 28px;
+
     min-height: 100vh;
     padding: 100px 8% 80px;
     overflow: hidden;
@@ -25,56 +33,7 @@
 /* Main character section */
 
 .character-detail-header {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    gap: 50px;
-
-    max-width: 1400px;
-    min-height: 520px;
-    margin: 0 auto 70px;
-}
-
-/* Character image */
-
-.character-detail-image {
-    position: relative;
-    grid-column: 2;
-    grid-row: 1;
-
-    width: 100%;
-    min-width: 0;
-    height: 520px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &::before {
-        content: "";
-        position: absolute;
-        width: 420px;
-        height: 420px;
-        border-radius: 50%;
-        background: rgba(168, 85, 247, 0.2);
-        filter: blur(90px);
-    }
-
-    img {
-    position: relative;
-    z-index: 1;
-
-    display: block;
-    width: 100%;
-    min-width: 300px;
-    height: 100%;
-
-    object-fit: contain;
-    object-position: center;
-
-    filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.25));
-}
+    display: contents;
 }
 
 /* Character information */
@@ -82,16 +41,23 @@
 .character-detail-info {
     grid-column: 1;
     grid-row: 1;
+
     position: relative;
     z-index: 2;
+
+    width: 100%;
+    min-width: 0;
     max-width: 570px;
 
     h1 {
         margin: 0 0 8px;
-        font-size: clamp(42px, 6vw, 76px);
+
+        font-size: clamp(42px, 4vw, 64px);
         font-weight: 800;
-        letter-spacing: 4px;
+        letter-spacing: 2px;
         text-transform: uppercase;
+
+        overflow-wrap: anywhere;
 
         background: linear-gradient(
             90deg,
@@ -112,8 +78,58 @@
     }
 }
 
+/* Character image */
+
+.character-detail-image {
+    grid-column: 2;
+    grid-row: 1;
+
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    min-width: 0;
+    height: 520px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+        content: "";
+        position: absolute;
+
+        width: 420px;
+        height: 420px;
+
+        border-radius: 50%;
+        background: rgba(168, 85, 247, 0.2);
+        filter: blur(90px);
+    }
+
+    img {
+        position: relative;
+        z-index: 1;
+
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+
+        object-fit: contain;
+        object-position: center;
+
+        filter: drop-shadow(
+            0 0 30px rgba(168, 85, 247, 0.25)
+        );
+    }
+}
+
+/* Character role */
+
 .character-detail-role {
     display: inline-block;
+
     padding: 7px 18px;
     margin-top: 12px;
 
@@ -132,18 +148,25 @@
 /* Character profile sections */
 
 .character-profile {
+    grid-column: 3;
+    grid-row: 1;
+
     position: relative;
-    z-index: 2;
+    z-index: 1;
 
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px;
 
+    width: 100%;
     max-width: 1400px;
-    margin: 0 auto;
+    min-width: 0;
+
+    margin: 0;
 }
 
 .character-profile-section {
+    min-width: 0;
     padding: 28px 30px;
 
     border: 1px solid rgba(167, 139, 250, 0.2);
@@ -211,22 +234,28 @@
 
 /* Tablet */
 
-@media (max-width: 900px) {
+@media (max-width: 1250px) {
     .character-detail {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 30px;
         padding: 80px 5% 60px;
     }
 
-    .character-detail-header {
-        gap: 20px;
+    .character-detail-info {
+        grid-column: 1;
+        grid-row: 1;
     }
 
     .character-detail-image {
-        width: 100%;
+        grid-column: 2;
+        grid-row: 1;
         height: 420px;
     }
 
     .character-profile {
-        grid-template-columns: 1fr;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -234,25 +263,20 @@
 
 @media (max-width: 650px) {
     .character-detail {
+        display: block;
         padding: 50px 6%;
     }
 
     .character-detail-header {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 15px;
+
         margin-bottom: 45px;
     }
 
-    .character-detail-image {
-        grid-column: 1;
-        grid-row: 1;
-        width: 100%;
-        height: 350px;
-    }
-
     .character-detail-info {
-        grid-column: 1;
-        grid-row: 2;
+        order: 1;
         width: 100%;
 
         h1 {
@@ -265,7 +289,15 @@
         }
     }
 
+    .character-detail-image {
+        order: 2;
+        width: 100%;
+        height: 350px;
+    }
+
     .character-profile {
+        display: grid;
+        grid-template-columns: 1fr;
         gap: 15px;
     }
 
