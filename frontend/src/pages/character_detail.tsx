@@ -17,6 +17,9 @@ function CharacterDetail() {
             if (!id) return
 
             try {
+                setLoading(true)
+                setError(null)
+
                 const data = await getCharacterById(id)
                 setCharacter(data)
             } catch (error) {
@@ -41,26 +44,38 @@ function CharacterDetail() {
     const profileSections = [
         {
             title: 'Biography',
+            icon: '✧',
+            className: 'biography',
             content: character.profile?.biography,
         },
         {
             title: 'Personality',
+            icon: '✦',
+            className: 'personality',
             content: character.profile?.personality,
         },
         {
             title: 'Abilities & Skills',
+            icon: '⚡',
+            className: 'abilities',
             content: character.profile?.abilities,
         },
         {
             title: 'Relationships',
+            icon: '◇',
+            className: 'relationships',
             content: character.profile?.relationships,
         },
         {
             title: 'Trivia',
+            icon: '✳',
+            className: 'trivia',
             content: character.profile?.trivia,
         },
         {
             title: 'Character Analysis',
+            icon: '◎',
+            className: 'analysis',
             content: character.profile?.analysis,
         },
     ]
@@ -78,6 +93,10 @@ function CharacterDetail() {
                 </div>
 
                 <div className="character-detail-info">
+                    <span className="character-eyebrow">
+                        CHARACTER DATABASE
+                    </span>
+
                     <h1>{character.name}</h1>
 
                     <span className="character-detail-role">
@@ -94,12 +113,23 @@ function CharacterDetail() {
 
             {character.profile && (
                 <section className="character-profile">
-                    {profileSections.map((section) => (
+                    {profileSections.map((section, index) => (
                         <article
-                            className="character-profile-section"
+                            className={`character-profile-section ${section.className}`}
                             key={section.title}
+                            style={{ animationDelay: `${index * 0.08}s` }}
                         >
-                            <h2>{section.title}</h2>
+                            <div className="character-profile-heading">
+                                <span
+                                    className="character-profile-icon"
+                                    aria-hidden="true"
+                                >
+                                    {section.icon}
+                                </span>
+
+                                <h2>{section.title}</h2>
+                            </div>
+
                             <p>
                                 {section.content ?? 'No information available.'}
                             </p>

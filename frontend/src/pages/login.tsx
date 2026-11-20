@@ -81,7 +81,9 @@ function Login() {
                                 className="password-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
                             >
-                                {showPassword ? 'Hide' : 'Show'}
+                                <span key={showPassword ? 'hide' : 'show'}>
+                                    {showPassword ? 'HIDE' : 'SHOW'}
+                                </span>
                             </button>
                         </div>
                     </div>

@@ -131,22 +131,73 @@
     }
 }
 
+
 .password-toggle {
     position: absolute;
     right: 13px;
     top: 50%;
     transform: translateY(-50%);
 
-    border: none;
+    padding: 7px 10px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+
     background: transparent;
     color: #c47aff;
+
     font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+
     cursor: pointer;
 
+    transition:
+        color 0.3s ease,
+        text-shadow 0.3s ease;
+
+    span {
+        display: inline-block;
+        animation: password-switch 0.3s ease both;
+    }
+
     &:hover {
-        color: #ff5cab;
+        color: #ff70b8;
+        text-shadow: 0 0 12px rgba(255, 112, 184, 0.7);
+    }
+
+    &:active {
+        color: #fff;
     }
 }
+
+@keyframes password-switch {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.85);
+        filter: blur(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes password-label-in {
+    from {
+        opacity: 0;
+        transform: translateY(7px) scale(0.85);
+        filter: blur(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
 
 .login-button {
     width: 100%;
